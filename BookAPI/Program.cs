@@ -1,11 +1,22 @@
+﻿using BookAPI.Data;
+using BookAPI.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddDbContext<AppDbContext>(options =>
 
+options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnString")?? throw new InvalidOperationException("Connection stringDefaultConnString not found.")));
+
+builder.Services.AddScoped<BooksService>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<PublishersService>();
+builder.Services.AddScoped<AuthorsService>();
 
 var app = builder.Build();
 
