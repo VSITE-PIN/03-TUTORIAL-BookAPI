@@ -1,3 +1,7 @@
+using BookAPI.Data;
+using BookAPI.Services;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -23,3 +27,12 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+
+options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnString")
+ ?? throw new InvalidOperationException("Connection stringDefaultConnString not found.")));
+
+builder.Services.AddScoped<BooksService>();
+
+
