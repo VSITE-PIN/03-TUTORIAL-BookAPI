@@ -1,4 +1,4 @@
-﻿namespace BookAPI.Data
+﻿namespace BookAPI.ViewModels
 {
     public class BookWithAuthorsVM
     {
