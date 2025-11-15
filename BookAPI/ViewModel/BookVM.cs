@@ -13,7 +13,9 @@
         //pa će vrijednost biti null) 
         public int? Rate { get; set; }
         public string Genre { get; set; }
-        public string Author { get; set; }
         public string CoverPictureURL { get; set; }
+        public int PublihserId { get; set; }
+        //više autora za istu knjigu
+        public List<int> AuthorIds { get; set; }
     }
 }

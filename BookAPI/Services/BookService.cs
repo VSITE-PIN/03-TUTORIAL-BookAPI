@@ -21,11 +21,23 @@ namespace BookAPI.Services
                 DateRead = book.IsRead ? book.DateRead : null,
                 Rate = book.IsRead ? book.Rate : null,
                 Genre = book.Genre,
-                Author = book.Author,
                 CoverPictureURL = book.CoverPictureURL,
                 DateAdded = DateTime.Now,
+                PublisherId = book.PublihserId
             };
             _context.Books.Add(newBook);
+            _context.SaveChanges();
+            //nakon što smo dodali knjigu u bazu imamo njen Id pa možemo puniti BookAuthor
+            //tablicu
+            foreach (var id in book.AuthorIds)
+            {
+                var bookAuthor = new BookAuthor()
+                {
+                    BookId = newBook.Id,
+                    AuthorId = id
+                };
+                _context.BooksAuthors.Add(bookAuthor);
+            }
             _context.SaveChanges();
         }
 
@@ -33,9 +45,23 @@ namespace BookAPI.Services
         {
             return _context.Books.ToList();
         }
-        public Book GetBookById(int id)
+        public BookWithAuthorsVM GetBookById(int id)
         {
-            return _context.Books.FirstOrDefault(x => x.Id == id);
+            var book = _context.Books.Where(n => n.Id == id).Select(book => new
+            BookWithAuthorsVM()
+            {
+                Title = book.Title,
+                Description = book.Description,
+                IsRead = book.IsRead,
+                DateRead = book.IsRead ? book.DateRead : null,
+                Rate = book.IsRead ? book.Rate : null,
+                Genre = book.Genre,
+                CoverPictureURL = book.CoverPictureURL,
+                PublihserName = book.Publisher.Name,
+                AuthorNames =
+            book.BookAuthors.Select(x => x.Author.FullName).ToList()
+            }).FirstOrDefault();
+            return book;
         }
 
         public Book UpdateBookById(int id, BookVM bookVM)
@@ -49,7 +75,7 @@ namespace BookAPI.Services
                 book.DateRead = bookVM.IsRead ? bookVM.DateRead : null;
                 book.Rate = bookVM.IsRead ? bookVM.Rate : null;
                 book.Genre = bookVM.Genre;
-                book.Author = bookVM.Author;
+                //book.Author = bookVM.Author;
                 book.CoverPictureURL = bookVM.CoverPictureURL;
                 _context.SaveChanges();
 
