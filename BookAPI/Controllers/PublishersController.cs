@@ -8,18 +8,18 @@ namespace BookAPI.Controllers
     [Route("api/[controller]")]
     public class PublishersController : ControllerBase
     {
-        private readonly PublishersService _publishersService;
+        private readonly PublisherService _publisherService;
 
-        public PublishersController(PublishersService publishersService)
+        public PublishersController(PublisherService publisherService)
         {
-            _publishersService = publishersService;
+            _publisherService = publisherService;
         }
 
         // POST: api/publishers/add-publisher
         [HttpPost("add-publisher")]
         public IActionResult AddPublisher([FromBody] PublisherVM publisher)
         {
-            _publishersService.AddPublisher(publisher);
+            _publisherService.AddPublisher(publisher);
             return Ok();
         }
 
@@ -27,7 +27,7 @@ namespace BookAPI.Controllers
         [HttpGet("get-all-publishers")]
         public IActionResult GetAllPublishers()
         {
-            var publishers = _publishersService.GetAllPublishers();
+            var publishers = _publisherService.GetAllPublishers();
             return Ok(publishers);
         }
 
@@ -35,7 +35,7 @@ namespace BookAPI.Controllers
         [HttpGet("get-publisher-by-id/{id}")]
         public IActionResult GetPublisherById(int id)
         {
-            var publisher = _publishersService.GetPublisherById(id);
+            var publisher = _publisherService.GetPublisherById(id);
 
             if (publisher == null)
                 return NotFound();
@@ -47,7 +47,7 @@ namespace BookAPI.Controllers
         [HttpDelete("delete-publisher/{id}")]
         public IActionResult DeletePublisher(int id)
         {
-            _publishersService.DeletePublisher(id);
+            _publisherService.DeletePublisher(id);
             return Ok();
         }
     }
