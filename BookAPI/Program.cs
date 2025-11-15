@@ -16,7 +16,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnString")
         ?? throw new InvalidOperationException("Connection string 'DefaultConnString' not found.")));
 
+// Registracija servisa
 builder.Services.AddScoped<BooksService>();
+builder.Services.AddScoped<AuthorsService>();
+builder.Services.AddScoped<PublisherService>();
+
 
 var app = builder.Build();
 

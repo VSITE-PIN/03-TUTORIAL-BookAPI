@@ -1,4 +1,5 @@
 ﻿using BookAPI.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookAPI.Services
 {
@@ -11,10 +12,44 @@ namespace BookAPI.Services
             _context = context;
         }
 
-        // 1. Dodavanje knjige
+        // GET all books (može i dalje vraćati pune Book objekte)
+        public List<Book> GetAllBooks()
+        {
+            return _context.Books
+                .Include(b => b.Publisher)
+                .Include(b => b.BookAuthors)
+                    .ThenInclude(ba => ba.Author)
+                .ToList();
+        }
+
+        // GET single book WITH authors and publisher name
+        public BookWithAuthorsVM? GetBookById(int id)
+        {
+            var book = _context.Books
+                .Where(n => n.Id == id)
+                .Select(book => new BookWithAuthorsVM
+                {
+                    Title = book.Title,
+                    Description = book.Description,
+                    IsRead = book.IsRead,
+                    DateRead = book.IsRead ? book.DateRead : null,
+                    Rate = book.IsRead ? book.Rate : null,
+                    Genre = book.Genre,
+                    CoverPictureURL = book.CoverPictureURL,
+                    PublisherName = book.Publisher.Name,
+                    AuthorNames = book.BookAuthors
+                        .Select(x => x.Author.FullName)
+                        .ToList()
+                })
+                .FirstOrDefault();
+
+            return book;
+        }
+
+        // ADD book
         public void AddBook(BookVM book)
         {
-            var newBook = new Book
+            var newBook = new Book()
             {
                 Title = book.Title,
                 Description = book.Description,
@@ -22,59 +57,79 @@ namespace BookAPI.Services
                 DateRead = book.IsRead ? book.DateRead : null,
                 Rate = book.IsRead ? book.Rate : null,
                 Genre = book.Genre,
-                Author = book.Author,
                 CoverPictureURL = book.CoverPictureURL,
-                DateAdded = DateTime.Now
+                DateAdded = DateTime.Now,
+                PublisherId = book.PublisherId
             };
 
             _context.Books.Add(newBook);
             _context.SaveChanges();
-        }
 
-        // 2. Dohvat svih knjiga
-        public List<Book> GetAllBooks()
-        {
-            return _context.Books.ToList();
-        }
-
-        // 3. Dohvat jedne knjige po ID-u
-        public Book? GetBookById(int id)
-        {
-            return _context.Books.FirstOrDefault(x => x.Id == id);
-        }
-
-        // 4. Ažuriranje knjige
-        public Book? UpdateBookById(int id, BookVM bookVM)
-        {
-            var book = _context.Books.FirstOrDefault(x => x.Id == id);
-
-            if (book != null)
+            // nakon što smo dodali knjigu, punimo veznu tablicu BookAuthor
+            if (book.AuthorIds != null && book.AuthorIds.Any())
             {
-                book.Title = bookVM.Title;
-                book.Description = bookVM.Description;
-                book.IsRead = bookVM.IsRead;
-                book.DateRead = bookVM.IsRead ? bookVM.DateRead : null;
-                book.Rate = bookVM.IsRead ? bookVM.Rate : null;
-                book.Genre = bookVM.Genre;
-                book.Author = bookVM.Author;
-                book.CoverPictureURL = bookVM.CoverPictureURL;
+                foreach (var id in book.AuthorIds)
+                {
+                    var bookAuthor = new BookAuthor()
+                    {
+                        BookId = newBook.Id,
+                        AuthorId = id
+                    };
+
+                    _context.BookAuthors.Add(bookAuthor);
+                }
 
                 _context.SaveChanges();
             }
-
-            return book;
         }
 
-        // 5. Brisanje knjige
-        public void DeleteBook(int id)
+        // UPDATE book by id
+        public void UpdateBookById(int id, BookVM book)
         {
-            var book = _context.Books.FirstOrDefault(x => x.Id == id);
+            var existingBook = _context.Books
+                .Include(b => b.BookAuthors)
+                .FirstOrDefault(b => b.Id == id);
 
-            if (book != null)
+            if (existingBook == null)
             {
-                _context.Books.Remove(book);
-                _context.SaveChanges();
+                return;
             }
+
+            existingBook.Title = book.Title;
+            existingBook.Description = book.Description;
+            existingBook.IsRead = book.IsRead;
+            existingBook.DateRead = book.IsRead ? book.DateRead : null;
+            existingBook.Rate = book.IsRead ? book.Rate : null;
+            existingBook.Genre = book.Genre;
+            existingBook.CoverPictureURL = book.CoverPictureURL;
+            existingBook.PublisherId = book.PublisherId;
+
+            // osvježi autore: obriši stare veze, dodaj nove
+            _context.BookAuthors.RemoveRange(existingBook.BookAuthors ?? new List<BookAuthor>());
+
+            if (book.AuthorIds != null && book.AuthorIds.Any())
+            {
+                existingBook.BookAuthors = book.AuthorIds
+                    .Select(aid => new BookAuthor
+                    {
+                        BookId = existingBook.Id,
+                        AuthorId = aid
+                    })
+                    .ToList();
+            }
+
+            _context.SaveChanges();
+        }
+
+        // DELETE book
+        public void DeleteBookById(int id)
+        {
+            var book = _context.Books.FirstOrDefault(b => b.Id == id);
+
+            if (book == null) return;
+
+            _context.Books.Remove(book);
+            _context.SaveChanges();
         }
     }
 }

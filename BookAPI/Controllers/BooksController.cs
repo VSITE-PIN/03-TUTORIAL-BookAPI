@@ -4,60 +4,58 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BookAPI.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class BooksController : ControllerBase
     {
-        public BooksService BooksService { get; set; }
+        private readonly BooksService _booksService;
 
         public BooksController(BooksService booksService)
         {
-            BooksService = booksService;
+            _booksService = booksService;
         }
 
-        // POST: api/Books
-        [HttpPost]
-        public IActionResult AddBook([FromBody] BookVM book)
-        {
-            BooksService.AddBook(book);
-            return Ok();
-        }
-
-        // GET: api/Books
-        [HttpGet]
+        // GET: api/books/get-all-books
+        [HttpGet("get-all-books")]
         public IActionResult GetAllBooks()
         {
-            var allBooks = BooksService.GetAllBooks();
+            var allBooks = _booksService.GetAllBooks();
             return Ok(allBooks);
         }
 
-        // GET: api/Books/id?id=1
-        [HttpGet("id")]
-        public IActionResult GetBookById([FromQuery] int id)
+        // GET: api/books/get-book-by-id/5
+        [HttpGet("get-book-by-id/{id}")]
+        public IActionResult GetBookById(int id)
         {
-            var book = BooksService.GetBookById(id);
+            var book = _booksService.GetBookById(id);
+
             if (book == null)
                 return NotFound();
 
             return Ok(book);
         }
 
-        // PUT: api/Books/id?id=1
-        [HttpPut("id")]
-        public IActionResult UpdateBookById([FromQuery] int id, [FromBody] BookVM bookVM)
+        // POST: api/books/add-book
+        [HttpPost("add-book")]
+        public IActionResult AddBook([FromBody] BookVM book)
         {
-            var updatedBook = BooksService.UpdateBookById(id, bookVM);
-            if (updatedBook == null)
-                return NotFound();
-
-            return Ok(updatedBook);
+            _booksService.AddBook(book);
+            return Ok();
         }
 
-        // DELETE: api/Books/id?id=1
-        [HttpDelete("id")]
-        public IActionResult DeleteBook([FromQuery] int id)
+        // PUT: api/books/update-book-by-id/5
+        [HttpPut("update-book-by-id/{id}")]
+        public IActionResult UpdateBook(int id, [FromBody] BookVM book)
         {
-            BooksService.DeleteBook(id);
+            _booksService.UpdateBookById(id, book);
+            return Ok();
+        }
+
+        // DELETE: api/books/delete-book-by-id/5
+        [HttpDelete("delete-book-by-id/{id}")]
+        public IActionResult DeleteBook(int id)
+        {
+            _booksService.DeleteBookById(id);
             return Ok();
         }
     }
