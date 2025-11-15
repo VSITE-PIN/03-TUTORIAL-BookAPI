@@ -11,6 +11,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     ?? throw new InvalidOperationException("Connection string DefaultConnString not found.")));
 
 builder.Services.AddScoped<BooksService>();
+builder.Services.AddScoped<PublishersService>();
+builder.Services.AddScoped<AuthorsService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

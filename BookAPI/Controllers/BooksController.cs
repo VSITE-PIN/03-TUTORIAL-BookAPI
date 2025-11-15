@@ -37,8 +37,7 @@ namespace BookAPI.Controllers
         }
 
         [HttpPut("id")]
-        public IActionResult UpdateBookById([FromQuery] int id,
-[FromBody] BookVM bookVM)
+        public IActionResult UpdateBookById([FromQuery] int id, [FromBody] BookVM bookVM)
         {
             var updatedBook = BooksService.UpdateBookById(id, bookVM);
             return Ok(updatedBook);

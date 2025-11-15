@@ -1,6 +1,6 @@
 ﻿namespace BookAPI.ViewModels
 {
-    public class BookVM
+    public class BookWithAuthorsVM
     {
         public string Title { get; set; }
         public string Description { get; set; }
@@ -12,8 +12,8 @@
         public int? Rate { get; set; }
         public string Genre { get; set; }
         public string CoverPictureURL { get; set; }
-        public int PublisherId { get; set; }
-        //više autora za istu knjigu  
-        public List<int> AuthorIds { get; set; }
+
+        public string PublihserName { get; set; }
+        public List<string> AuthorNames { get; set; }
     }
 }
