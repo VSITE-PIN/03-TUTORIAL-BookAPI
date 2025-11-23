@@ -1,4 +1,22 @@
+
+
+using Microsoft.EntityFrameworkCore;
+using BookAPI.Services;
+using BookAPI.Data;
+using Microsoft.AspNetCore.Mvc;
+using BookAPI.ViewModels;
 var builder = WebApplication.CreateBuilder(args);
+
+
+
+
+
+
+builder.Services.AddDbContext<AppDbContext>(options =>options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnString")?? throw new InvalidOperationException("Connection string DefaultConnString not found.")));
+
+builder.Services.AddScoped<PublishersService>();
+builder.Services.AddScoped<AuthorsService>();
+builder.Services.AddScoped<BooksService>();
 
 // Add services to the container.
 
@@ -23,3 +41,18 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public class BooksController : ControllerBase
+{
+	public BooksService BooksService { get; set; }
+	public BooksController(BooksService booksService)
+	{
+		BooksService = booksService;
+	}
+	[HttpPost]
+	public IActionResult AddBook([FromBody] BookVM book)
+	{
+		BooksService.AddBook(book);
+		return Ok();
+	}
+}
